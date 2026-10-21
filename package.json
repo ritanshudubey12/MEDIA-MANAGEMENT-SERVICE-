@@ -1,0 +1,38 @@
+{
+  "name": "media-management-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "migrate": "tsx src/db/migrate.ts",
+    "token": "tsx src/scripts/generate-token.ts",
+    "postman:build": "tsx src/scripts/build-collection.ts",
+    "test:postman": "tsx src/scripts/build-collection.ts && tsx src/scripts/run-postman.ts",
+    "test:auth": "tsx src/scripts/auth-check.ts",
+    "postman:env": "tsx src/scripts/postman-env.ts",
+    "db:up": "docker compose up -d postgres"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "jose": "^6.2.13",
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "newman": "^6.2.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

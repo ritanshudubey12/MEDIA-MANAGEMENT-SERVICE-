@@ -1,0 +1,1646 @@
+{
+  "info": {
+    "name": "Media Management API",
+    "description": "Run with the generated environment (npm run test:postman). Success flow asserts 200 OK; the Security folder deliberately asserts the correct 4xx codes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "folderId",
+      "value": ""
+    },
+    {
+      "key": "subFolderId",
+      "value": ""
+    },
+    {
+      "key": "assetId",
+      "value": ""
+    },
+    {
+      "key": "uploadUrl",
+      "value": ""
+    },
+    {
+      "key": "signedUrl",
+      "value": ""
+    },
+    {
+      "key": "referenceId",
+      "value": ""
+    },
+    {
+      "key": "resizeKey",
+      "value": ""
+    },
+    {
+      "key": "cropKey",
+      "value": ""
+    },
+    {
+      "key": "optKey",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 Health and folders",
+      "item": [
+        {
+          "name": "GET /health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('status ok', () => pm.expect(j.data.status).to.eql('ok'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "GET /ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('db + storage ok', () => pm.expect(j.data.checks).to.eql({ database: 'ok', storage: 'ok' }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ready"
+          }
+        },
+        {
+          "name": "POST folder (create)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('folderId', j.data.id);",
+                  "pm.test('Folder id is a decimal string', () => pm.expect(j.data.id).to.match(/^[0-9]+$/));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman {{$timestamp}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET folders (list)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Contains created folder', () => pm.expect(j.data.map(f => f.id)).to.include(pm.collectionVariables.get('folderId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders?parentFolderId=root"
+          }
+        },
+        {
+          "name": "GET folder by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Right folder', () => pm.expect(j.data.id).to.eql(pm.collectionVariables.get('folderId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders/{{folderId}}"
+          }
+        },
+        {
+          "name": "PATCH folder (rename)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Renamed', () => pm.expect(j.data.name).to.match(/^Renamed/));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders/{{folderId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Renamed {{$timestamp}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT folder (replace)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Replaced', () => pm.expect(j.data.name).to.match(/^Replaced/));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders/{{folderId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Replaced {{$timestamp}}\",\n  \"parentFolderId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "POST sub-folder",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('subFolderId', j.data.id);",
+                  "pm.test('Parent set', () => pm.expect(j.data.parentFolderId).to.eql(pm.collectionVariables.get('folderId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Child\",\n  \"parentFolderId\": \"{{folderId}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 Upload lifecycle",
+      "item": [
+        {
+          "name": "POST upload-session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "const d = j.data;",
+                  "pm.collectionVariables.set('assetId', d.assetId);",
+                  "pm.collectionVariables.set('uploadUrl', d.uploadUrl);",
+                  "pm.test('Status PENDING_UPLOAD', () => pm.expect(d.status).to.eql('PENDING_UPLOAD'));",
+                  "pm.test('assetId is auto-assigned BIGINT string beyond JS safe integer', () => { pm.expect(d.assetId).to.match(/^[0-9]{16,19}$/); pm.expect(BigInt(d.assetId) > BigInt(Number.MAX_SAFE_INTEGER)).to.eql(true); });",
+                  "pm.test('uploadUrl present', () => pm.expect(d.uploadUrl).to.include('/api/v1/media/uploads/'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/upload-sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileName\": \"hero-banner.png\",\n  \"contentType\": \"image/png\",\n  \"sizeBytes\": \"4807\",\n  \"folderId\": \"{{folderId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT binary to signed upload URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('uploaded', () => pm.expect(j.data.uploaded).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "image/png"
+              }
+            ],
+            "url": "{{uploadUrl}}",
+            "body": {
+              "mode": "file",
+              "file": {
+                "src": "sample.png"
+              }
+            }
+          }
+        },
+        {
+          "name": "POST complete-upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Moved past PENDING_UPLOAD', () => pm.expect(['UPLOADED','PROCESSING','READY']).to.include(j.data.status));",
+                  "pm.test('Actual size recorded as string', () => pm.expect(j.data.sizeBytes).to.eql('4807'));",
+                  "pm.test('sha256 recorded', () => pm.expect(j.data.checksumSha256).to.match(/^[a-f0-9]{64}$/));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/complete-upload",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "POST complete-upload (idempotent replay)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Replay flagged', () => pm.expect(j.data.idempotentReplay).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/complete-upload",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "GET processing-status (poll until READY)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(() => {}, 300);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "",
+                  "const tries = Number(pm.collectionVariables.get('pollAsset') || 0);",
+                  "if (!(j.data.status === 'READY') && tries < 25) { pm.collectionVariables.set('pollAsset', tries + 1); postman.setNextRequest(pm.info.requestName); }",
+                  "else { pm.collectionVariables.set('pollAsset', 0); pm.test('Condition reached', () => pm.expect(j.data.status === 'READY').to.eql(true)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/processing-status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 Library, metadata, references",
+      "item": [
+        {
+          "name": "GET media (list, filters, cursor pagination)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Contains uploaded asset', () => pm.expect(j.data.map(a => a.id)).to.include(pm.collectionVariables.get('assetId')));",
+                  "pm.test('Pagination meta', () => pm.expect(j.meta).to.have.property('nextCursor'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media?limit=5&q=hero&mimeType=image&status=READY&folderId={{folderId}}"
+          }
+        },
+        {
+          "name": "GET media/:id (detail with variants)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Dimensions extracted by worker', () => { pm.expect(j.data.width).to.eql(640); pm.expect(j.data.height).to.eql(400); });",
+                  "pm.test('Auto thumbnail variant', () => pm.expect(j.data.variants.map(v => v.variantKey)).to.include('thumb_320'));",
+                  "pm.test('Private by default', () => pm.expect(j.data.visibility).to.eql('PRIVATE'));",
+                  "pm.test('Storage key not leaked', () => pm.expect(JSON.stringify(j)).to.not.include('storage'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}"
+          }
+        },
+        {
+          "name": "PATCH media/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Updated', () => { pm.expect(j.data.displayName).to.eql('Hero banner'); pm.expect(j.data.folderId).to.eql(pm.collectionVariables.get('subFolderId')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Hero banner\",\n  \"altText\": \"A blue banner\",\n  \"folderId\": \"{{subFolderId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT media/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Replaced', () => { pm.expect(j.data.displayName).to.eql('Hero banner v2'); pm.expect(j.data.folderId).to.eql(pm.collectionVariables.get('folderId')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Hero banner v2\",\n  \"altText\": \"Blue banner v2\",\n  \"folderId\": \"{{folderId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST media/:id/references",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('referenceId', j.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/references",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceType\": \"page\",\n  \"sourceId\": \"page-42\",\n  \"referenceKey\": \"hero\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET media/:id/references",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('In use', () => { pm.expect(j.data.inUse).to.eql(true); pm.expect(j.data.references.length).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/references"
+          }
+        },
+        {
+          "name": "GET media/usage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Usage counted', () => { pm.expect(BigInt(j.data.storedBytes) >= BigInt('4807')).to.eql(true); pm.expect(j.data.quotaBytes).to.match(/^[0-9]+$/); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/usage"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 Variants and delivery",
+      "item": [
+        {
+          "name": "POST resize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('resizeKey', j.data.variantKey);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/resize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"width\": 320,\n  \"fit\": \"inside\",\n  \"format\": \"webp\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST crop",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('cropKey', j.data.variantKey);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/crop",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"left\": 10,\n  \"top\": 10,\n  \"width\": 200,\n  \"height\": 100\n}"
+            }
+          }
+        },
+        {
+          "name": "POST optimize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('optKey', j.data.variantKey);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/optimize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quality\": 70,\n  \"format\": \"jpeg\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET processing-status (poll until variants READY)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(() => {}, 300);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "",
+                  "const tries = Number(pm.collectionVariables.get('pollVariants') || 0);",
+                  "if (!(j.data.variants.length >= 4 && j.data.variants.every(v => v.status === 'READY')) && tries < 25) { pm.collectionVariables.set('pollVariants', tries + 1); postman.setNextRequest(pm.info.requestName); }",
+                  "else { pm.collectionVariables.set('pollVariants', 0); pm.test('Condition reached', () => pm.expect(j.data.variants.length >= 4 && j.data.variants.every(v => v.status === 'READY')).to.eql(true)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/processing-status"
+          }
+        },
+        {
+          "name": "GET media/:id/url (signed download URL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.collectionVariables.set('signedUrl', j.data.url);",
+                  "pm.test('Signed URL', () => pm.expect(j.data.url).to.include('sig='));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/url?variant={{resizeKey}}"
+          }
+        },
+        {
+          "name": "GET signed URL (no Bearer needed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Served as webp', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('image/webp'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{signedUrl}}"
+          }
+        },
+        {
+          "name": "GET media/:id/content (authenticated stream)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Served as png', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('image/png'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/content?variant={{cropKey}}"
+          }
+        },
+        {
+          "name": "PATCH media/:id visibility=PUBLIC (explicit publish)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Public', () => pm.expect(j.data.visibility).to.eql('PUBLIC'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visibility\": \"PUBLIC\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET public/:id (no auth, PUBLIC asset)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/media/public/{{assetId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 Security and error contract (expected 4xx)",
+      "item": [
+        {
+          "name": "No Authorization header -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 401', () => pm.response.to.have.status(401));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is UNAUTHENTICATED', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('UNAUTHENTICATED'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/media"
+          }
+        },
+        {
+          "name": "Malformed token -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 401', () => pm.response.to.have.status(401));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is INVALID_TOKEN', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('INVALID_TOKEN'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer not.a.jwt"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media"
+          }
+        },
+        {
+          "name": "Expired token -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 401', () => pm.response.to.have.status(401));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is TOKEN_EXPIRED', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('TOKEN_EXPIRED'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenExpired}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media"
+          }
+        },
+        {
+          "name": "Read-only token cannot create upload session -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 403', () => pm.response.to.have.status(403));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is INSUFFICIENT_PERMISSION', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('INSUFFICIENT_PERMISSION'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenReadOnly}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/upload-sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileName\": \"x.png\",\n  \"contentType\": \"image/png\",\n  \"sizeBytes\": \"10\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Other tenant cannot read asset -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is MEDIA_NOT_FOUND', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('MEDIA_NOT_FOUND'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOtherTenant}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}"
+          }
+        },
+        {
+          "name": "Spoofed X-Tenant-Id header is ignored (other tenant list is empty)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('No leak of tenant 1001 assets', () => pm.expect(j.data.map(a => a.id)).to.not.include(pm.collectionVariables.get('assetId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOtherTenant}}"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "1001"
+              },
+              {
+                "key": "X-Organization-Id",
+                "value": "5001"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "7001"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media"
+          }
+        },
+        {
+          "name": "Non-numeric id -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is VALIDATION_ERROR', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('VALIDATION_ERROR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/abc"
+          }
+        },
+        {
+          "name": "Unsupported content type -> 415",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 415', () => pm.response.to.have.status(415));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is UNSUPPORTED_MEDIA_TYPE', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('UNSUPPORTED_MEDIA_TYPE'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/upload-sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileName\": \"x.exe\",\n  \"contentType\": \"application/x-msdownload\",\n  \"sizeBytes\": \"10\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Oversized file -> 413",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 413', () => pm.response.to.have.status(413));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is FILE_TOO_LARGE', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('FILE_TOO_LARGE'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/upload-sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileName\": \"big.png\",\n  \"contentType\": \"image/png\",\n  \"sizeBytes\": \"99999999999\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Validation error -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is VALIDATION_ERROR', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('VALIDATION_ERROR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/upload-sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentType\": \"image/png\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Tampered signed URL -> 403",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.request.url.update(pm.collectionVariables.get('signedUrl').replace(/sig=[a-f0-9]+/, 'sig=' + '0'.repeat(64)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 403', () => pm.response.to.have.status(403));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is FORBIDDEN', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('FORBIDDEN'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{signedUrl}}"
+          }
+        },
+        {
+          "name": "Delete in-use asset -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 409', () => pm.response.to.have.status(409));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is ASSET_IN_USE', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('ASSET_IN_USE'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}"
+          }
+        },
+        {
+          "name": "Resize variant on unknown asset -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is MEDIA_NOT_FOUND', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('MEDIA_NOT_FOUND'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/1/resize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"width\": 100\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 Cleanup (delete)",
+      "item": [
+        {
+          "name": "PATCH media/:id visibility=PRIVATE (unpublish)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Private again', () => pm.expect(j.data.visibility).to.eql('PRIVATE'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visibility\": \"PRIVATE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET public/:id after unpublish -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is MEDIA_NOT_FOUND', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('MEDIA_NOT_FOUND'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/media/public/{{assetId}}"
+          }
+        },
+        {
+          "name": "DELETE media/:id/references/:referenceId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Removed', () => pm.expect(j.data.removed).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}/references/{{referenceId}}"
+          }
+        },
+        {
+          "name": "DELETE media/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Soft-deleted', () => pm.expect(j.data.status).to.eql('DELETE_PENDING'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}"
+          }
+        },
+        {
+          "name": "GET media/:id after delete -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is MEDIA_NOT_FOUND', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('MEDIA_NOT_FOUND'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/{{assetId}}"
+          }
+        },
+        {
+          "name": "DELETE folder (non-empty parent without flag) -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 409', () => pm.response.to.have.status(409));",
+                  "const j = pm.response.json();",
+                  "pm.test('Error code is FOLDER_NOT_EMPTY', () => { pm.expect(j.success).to.eql(false); pm.expect(j.error.code).to.eql('FOLDER_NOT_EMPTY'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders/{{folderId}}"
+          }
+        },
+        {
+          "name": "DELETE sub-folder",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Deleted', () => pm.expect(j.data.deleted).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders/{{subFolderId}}"
+          }
+        },
+        {
+          "name": "DELETE folder",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Envelope success=true with requestId', () => { pm.expect(j.success).to.eql(true); pm.expect(j.meta.requestId).to.be.a('string'); });",
+                  "pm.test('Deleted', () => pm.expect(j.data.deleted).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/media/folders/{{folderId}}"
+          }
+        }
+      ]
+    }
+  ]
+}
